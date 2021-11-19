@@ -21,6 +21,7 @@ Route::post('/register', [AuthenticationController::class, 'createAccount']);
 
 Route::post('/login',[AuthenticationController::class, 'login']);
 
+
 Route::middleware('auth:sanctum')->group(function(){
     Route::get('/search/{user}/user', [UserController::class, 'search']);
 });

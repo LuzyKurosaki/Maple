@@ -14,6 +14,7 @@ class AuthenticationController extends Controller
     public function createAccount(Request $request){
         $validator = Validator::make($request->all(),[
             'username' => 'required|unique:App\Models\User,username',
+
             'email' => 'required|unique:App\Models\User,email',
             'password' => 'required|confirmed',
         ]);
@@ -24,6 +25,15 @@ class AuthenticationController extends Controller
             'username' => trim($request->get('username')),
             'email' => trim($request->get('email')),
             'password' => bcrypt(trim($request->get('password')))
+        ]);
+        if($validator->fails()){
+            return response()->json(['message' =>'Check Input', 'success' => false]);
+        }
+
+        User::create([
+            'username' => $request->get('username'),
+            'email' => $request->get('email'),
+            'password' => bcrypt($request->get('password'))
         ]);
 
         return response()->json(['message' =>'Account created', 'success' => true]);
@@ -43,6 +53,15 @@ class AuthenticationController extends Controller
         $user = User::where('username', 'like', $request->get('username'))->orWhere('email', 'like', 'username')->first();
         if(empty($user) || !Hash::check(trim($request->get('password')), $user->password)){
             return response()->json(['message' => "check your credentials", 'success' => false]);
+        ]);
+
+        if($validator->fails()){
+            return response()->json(['message' => 'Check Input', 'success' => false]);
+        }
+
+        $user = User::where('username', 'like', $request->get('username'))->orWhere('email', 'like', 'username')->first();
+        if(!$user || ! Hash::check($request->get('password'), $user->password)){
+            return response()->json(['message' => 'Check your Credentials', 'success' => false]);
         }
         $user->tokens()->where('name', $request->device_name)->delete();
         return response()->json(['message' => $user->createToken($request->device_name)->plainTextToken, 'success' => true]);
