@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class AuthenticationController extends Controller
@@ -13,8 +14,17 @@ class AuthenticationController extends Controller
     public function createAccount(Request $request){
         $validator = Validator::make($request->all(),[
             'username' => 'required|unique:App\Models\User,username',
-            'email' => 'required|email:rfc|unique:App\Models\User,email',
+
+            'email' => 'required|unique:App\Models\User,email',
             'password' => 'required|confirmed',
+        ]);
+        if($validator->fails()){
+            return response()->json(['message' => $validator->messages()->toJson(), 'success' => false]);
+        }
+        User::create([
+            'username' => trim($request->get('username')),
+            'email' => trim($request->get('email')),
+            'password' => bcrypt(trim($request->get('password')))
         ]);
         if($validator->fails()){
             return response()->json(['message' =>'Check Input', 'success' => false]);
@@ -33,7 +43,16 @@ class AuthenticationController extends Controller
         $validator = Validator::make($request->all(),[
             'username' => 'required',
             'password' => 'required',
-            'device_name' =>'required|alpha_num'
+            'device_name' =>'required'
+        ]);
+
+        if($validator->fails()){
+            return response()->json(['message' => $validator->messages()->toJson(), 'success' => false]);
+        }
+
+        $user = User::where('username', 'like', $request->get('username'))->orWhere('email', 'like', 'username')->first();
+        if(empty($user) || !Hash::check(trim($request->get('password')), $user->password)){
+            return response()->json(['message' => "check your credentials", 'success' => false]);
         ]);
 
         if($validator->fails()){

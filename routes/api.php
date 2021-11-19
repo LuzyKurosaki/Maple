@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Android\Maple\UserController;
 use App\Http\Controllers\Auth\AuthenticationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,7 @@ Route::post('/register', [AuthenticationController::class, 'createAccount']);
 
 Route::post('/login',[AuthenticationController::class, 'login']);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+
+Route::middleware('auth:sanctum')->group(function(){
+    Route::get('/search/{user}/user', [UserController::class, 'search']);
 });

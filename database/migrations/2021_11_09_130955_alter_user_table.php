@@ -15,6 +15,8 @@ class AlterUserTable extends Migration
     {
         Schema::table('users', function(Blueprint $table){
             $table->string('username')->unique('username');
+            $table->boolean('dsgvo_accepted');
+            $table->boolean('agb_accepted');
             $table->string('last_name')->nullable();
         });
     }
